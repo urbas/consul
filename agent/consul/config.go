@@ -85,6 +85,11 @@ type Config struct {
 	// DataDir is the directory to store our state in.
 	DataDir string
 
+	// DefaultQueryTime is the amount of time a blocking query will wait before
+	// Consul will force a response. This value can be overridden by the 'wait'
+	// query parameter.
+	DefaultQueryTime time.Duration
+
 	// DevMode is used to enable a development server mode.
 	DevMode bool
 
@@ -380,6 +385,11 @@ type Config struct {
 
 	// ConnectReplicationToken is used to control Intention replication.
 	ConnectReplicationToken string
+
+	// MaxQueryTime is the maximum amount of time a blocking query can wait
+	// before Consul will force a response. Consul applies jitter to the wait
+	// time. The jittered time will be capped to MaxQueryTime.
+	MaxQueryTime time.Duration
 }
 
 // CheckProtocolVersion validates the protocol version.
@@ -471,6 +481,8 @@ func DefaultConfig() *Config {
 
 		ServerHealthInterval: 2 * time.Second,
 		AutopilotInterval:    10 * time.Second,
+		DefaultQueryTime:     300 * time.Second,
+		MaxQueryTime:         600 * time.Second,
 	}
 
 	// Increase our reap interval to 3 days instead of 24h.

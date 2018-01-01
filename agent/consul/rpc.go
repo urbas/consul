@@ -21,13 +21,6 @@ import (
 )
 
 const (
-	// maxQueryTime is used to bound the limit of a blocking query
-	maxQueryTime = 600 * time.Second
-
-	// defaultQueryTime is the amount of time we block waiting for a change
-	// if no time is specified. Previously we would wait the maxQueryTime.
-	defaultQueryTime = 300 * time.Second
-
 	// jitterFraction is a the limit to the amount of jitter we apply
 	// to a user specified MaxQueryTime. We divide the specified time by
 	// the fraction. So 16 == 6.25% limit of jitter. This same fraction
@@ -370,15 +363,17 @@ func (s *Server) blockingQuery(queryOpts *structs.QueryOptions, queryMeta *struc
 		goto RUN_QUERY
 	}
 
-	// Restrict the max query time, and ensure there is always one.
-	if queryOpts.MaxQueryTime > maxQueryTime {
-		queryOpts.MaxQueryTime = maxQueryTime
-	} else if queryOpts.MaxQueryTime <= 0 {
-		queryOpts.MaxQueryTime = defaultQueryTime
+	if queryOpts.MaxQueryTime <= 0 {
+		queryOpts.MaxQueryTime = s.config.DefaultQueryTime
 	}
 
 	// Apply a small amount of jitter to the request.
 	queryOpts.MaxQueryTime += lib.RandomStagger(queryOpts.MaxQueryTime / jitterFraction)
+
+	// Restrict the max query time, and ensure there is always one.
+	if queryOpts.MaxQueryTime > s.config.MaxQueryTime {
+		queryOpts.MaxQueryTime = s.config.MaxQueryTime
+	}
 
 	// Setup a query timeout.
 	timeout = time.NewTimer(queryOpts.MaxQueryTime)

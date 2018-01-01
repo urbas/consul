@@ -541,6 +541,13 @@ type RuntimeConfig struct {
 	// processes up.
 	ConnectTestDisableManagedProxies bool
 
+	// DefaultQueryTime is the amount of time a blocking query will wait before
+	// Consul will force a response. This value can be overridden by the 'wait'
+	// query parameter.
+	//
+	// hcl: max_query_time = "duration"
+	DefaultQueryTime time.Duration
+
 	// DNSAddrs contains the list of TCP and UDP addresses the DNS server will
 	// bind to. If the DNS endpoint is disabled (ports.dns <= 0) the list is
 	// empty.
@@ -800,6 +807,13 @@ type RuntimeConfig struct {
 	// hcl: log_rotate_bytes = int
 	// flags: -log-rotate-bytes int
 	LogRotateBytes int
+
+	// MaxQueryTime is the maximum amount of time a blocking query can wait
+	// before Consul will force a response. Consul applies jitter to the wait
+	// time. The jittered time will be capped to MaxQueryTime.
+	//
+	// hcl: max_query_time = "duration"
+	MaxQueryTime time.Duration
 
 	// Node ID is a unique ID for this node across space and time. Defaults
 	// to a randomly-generated ID that persists in the data-dir.
